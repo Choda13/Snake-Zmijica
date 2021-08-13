@@ -24,15 +24,30 @@
 #define BUTTON6_START_Y 30
 #define BUTTON7_START_Y 50
 
-#define BUTTON1 "playDugme.txt"
-#define BUTTON2 "pickLevel.txt"
-#define BUTTON3 "exit.txt"
-#define BUTTON4 "textColor.txt"
-#define BUTTON5 "settings2.txt"
-#define BUTTON6 "mode1.txt"
-#define BUTTON7 "mode2.txt"
+#define AUDIO_DIR "Audio\\"
+#define UI_DIR "UI\\"
+#define ANIM_DIR "Animations\\"
 
-#define MAPAS "mapa.txt"
+#define BUTTON1 UI_DIR "playDugme.txt"
+#define BUTTON2 UI_DIR "pickLevel.txt"
+#define BUTTON3 UI_DIR "exit.txt"
+#define BUTTON4 UI_DIR "textColor.txt"
+#define BUTTON5 UI_DIR "settings2.txt"
+#define BUTTON6 UI_DIR "mode1.txt"
+#define BUTTON7 UI_DIR "mode2.txt"
+#define BUTTON8 UI_DIR "settings.txt"
+#define MAPAS UI_DIR "mapa.txt"
+
+#define CLICK AUDIO_DIR "click.wav"
+#define CONFIRM AUDIO_DIR "confirm.wav"
+#define MUSIC AUDIO_DIR "idezmija.wav"
+#define TURBO_MUSIC AUDIO_DIR "tokio.wav"
+#define GAME_OVER_MUSIC AUDIO_DIR "astronomia.wav"
+#define PROJECTOR_MUSIC AUDIO_DIR "projector.wav"
+
+#define COUNTDOWN_ANIM ANIM_DIR "CountdownAnim\\frame"
+#define DEAD_ANIM ANIM_DIR "DEAD\\frame"
+#define SNAKE_GIF ANIM_DIR "Snake\\frame"
 
 #define VEL 0.85
 #define SAT 0.85
@@ -78,7 +93,7 @@
 #define BEGIN_SIZE 5
 #define MAX_SIZE 100
 
-#define HUDS "hudSurvival.txt"
+#define HUDS UI_DIR "hudSurvival.txt"
 
 #define DELAY 50 //gif delay in ms
 
@@ -219,7 +234,7 @@ void ispisiBlok(BLOK_ZMIJE blok);
 int main()
 {
 	info.cbSize = sizeof(info);
-	srand(time(0));
+	srand((unsigned int)time(0));
 	meni();
     return 0;
 
@@ -285,7 +300,7 @@ void sarenilo()
 **************************/
 void gif(int x, int y)
 {
-	char frame[100] = "frame";
+	char frame[100] = SNAKE_GIF;
 	char frameNum[3];
 	wchar_t* niz;
 
@@ -321,7 +336,7 @@ void gif(int x, int y)
 
 			free(niz);
 
-			strcpy(frame, "frame");
+			strcpy(frame, SNAKE_GIF);
 			Sleep(DELAY);
 		}
 	}
@@ -335,7 +350,6 @@ void changeConsole(SHORT width, SHORT height, int font)
 {
 	CONSOLE_FONT_INFOEX cfi;
 	char komanda[50]="mode";
-	char broj[10];
 	cfi.cbSize = sizeof(cfi);
 	cfi.nFont = 0;
 	cfi.dwFontSize.X = 0;
@@ -374,12 +388,14 @@ wchar_t* ucitajFajl(const char imeFajla[])
 {
 	FILE* f = fopen(imeFajla, "r+,ccs=UTF-8");
 	wchar_t* niz;
-	niz = (wchar_t*)calloc(500*200, sizeof(wchar_t));
+	size_t ArraySize = 500 * 200;
+	niz = (wchar_t*)calloc(ArraySize, sizeof(wchar_t));
 	
 	fseek(f, 0, SEEK_END);
 	size_t size = ftell(f);
 	rewind(f);
-	fread(niz, sizeof(wchar_t), size, f);
+	if(niz)
+		fread(niz, sizeof(wchar_t), ArraySize, f);
 	fclose(f);
 
 	return niz;
@@ -394,8 +410,6 @@ void SakriKursor() {
 	info.bVisible = FALSE;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
 }
-
-
 
 /********************************************
 ----ODREDJUJE-TRENUTNO-SELEKTOVANO-DUGME-----
@@ -425,7 +439,7 @@ void settings()
 {
 	wchar_t* niz;
 	char c;
-	niz = ucitajFajl("settings.txt");
+	niz = ucitajFajl(BUTTON8);
 	changeConsole2(150, 150, font, 0);
 	mtx.lock();
 	info.srWindow.Bottom = height/font+20;
@@ -447,7 +461,7 @@ void settings()
 	mtx.unlock();
 	free(niz);
 
-	niz = ucitajFajl("textColor.txt");
+	niz = ucitajFajl(BUTTON4);
 
 	mtx.lock();
 	_setmode(_fileno(stdout), _O_WTEXT);
@@ -473,7 +487,7 @@ void settings()
 	}
 	mtx.unlock();
 
-	niz = ucitajFajl("settings2.txt");
+	niz = ucitajFajl(BUTTON5);
 
 	mtx.lock();
 	_setmode(_fileno(stdout), _O_WTEXT);
@@ -555,7 +569,7 @@ void settings()
 				mtx.unlock();
 				free(niz); 
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("click.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CLICK), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				Sleep(40);
 			}
 
@@ -596,7 +610,7 @@ void settings()
 				mtx.unlock();
 				free(niz);
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("click.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CLICK), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				Sleep(40);
 
 			}
@@ -612,7 +626,7 @@ void settings()
 				changeFgBg(fgc, bgc);
 				ispisi = 1;
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				break;
 			}
 			if (y == BUTTON5_START_Y && izbor(c) != -1)
@@ -622,14 +636,14 @@ void settings()
 				fun_ptr = settings;
 				ispisi = 1;
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				break;
 			}
 			if (c == 27)
 			{
 				ispisi = 2;
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				break;
 			}
 		}
@@ -690,21 +704,20 @@ void ispisiOpet(void (*fun)())
 /**************************
 -------POCETNI-MENI--------
 **************************/
-int ooookk = 1;
+bool FirstTime = true;
 void meni()
 {
 	void SakriKursor();
 	changeFgBg(fgc, bgc);
 	changeConsole2(130, 170, font, 0);
-	if (ooookk)
+	if (FirstTime)
 	{
-		/*changeConsole(width, height, font);*/ ooookk = 0;
+		FirstTime = false;
 		GetConsoleScreenBufferInfoEx(GetStdHandle(STD_OUTPUT_HANDLE), &info);
 		HWND consoleWindow = GetConsoleWindow();
 		SetWindowLongW(consoleWindow, GWL_STYLE, GetWindowLongW(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX & ~WS_VSCROLL);
 		SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_EXTENDED_FLAGS);
 	}
-
 
 	wchar_t* niz;
 	niz = ucitajFajl(BUTTON1);
@@ -743,12 +756,10 @@ void meni()
 
 	if (gifRadi==false)
 	{
-	
 		gifRadi = true;
 		thread th(gif, 0, 0);
 		th.detach();
 	}
-
 
 	/****************************
 	 -----------MENU--------------
@@ -799,7 +810,7 @@ void meni()
 				wprintf(L"%s", niz);
 				mtx.unlock();
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("click.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CLICK), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				Sleep(40);
 				free(niz);
 			}
@@ -842,7 +853,7 @@ void meni()
 				wprintf(L"%s", niz);
 				mtx.unlock();
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("click.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CLICK), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				free(niz);
 				Sleep(40);
 			}
@@ -856,7 +867,7 @@ void meni()
 				if (!strcmp(dugme, BUTTON2))
 				{
 					PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-					PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 					mtx.lock();
 					changeFgBg(fgc, bgc);
 					system("cls");
@@ -866,14 +877,14 @@ void meni()
 				if (!strcmp(dugme, BUTTON3))
 				{
 					PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-					PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 					exitAnim();
 					exit(EXIT_SUCCESS);
 				}
 				if (!strcmp(dugme, BUTTON1))
 				{
 					PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-					PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 					playPickMode();
 				}
 			}
@@ -960,7 +971,7 @@ void playPickMode()
 				mtx.unlock();
 				free(niz);
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("click.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CLICK), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				Sleep(40);
 			}
 
@@ -1000,7 +1011,7 @@ void playPickMode()
 				mtx.unlock();
 				free(niz);
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("click.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CLICK), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				Sleep(40);
 			}
 
@@ -1014,13 +1025,13 @@ void playPickMode()
 				if (!strcmp(dugme, BUTTON6))
 				{
 					PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-					PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 					startGameModeS();
 				}
 				if (!strcmp(dugme, BUTTON7))
 				{
 					PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-					PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 					startGameModeC();
 				}
 			}
@@ -1028,7 +1039,7 @@ void playPickMode()
 			if (c == 27)
 			{
 				PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-				PlaySound(TEXT("confirm.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
+				PlaySound(TEXT(CONFIRM), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC);
 				ispisi = 1;
 				break;
 			}
@@ -1071,7 +1082,6 @@ void startGameModeS()
 	wchar_t* niz;
 	char c;
 	char d[50] = {};
-	char string[100];
 	BLOK_ZMIJE defBlok;
 	int trenutniSmer = SMER_DESNO;
 	int prosliSmer = SMER_DESNO;
@@ -1134,7 +1144,7 @@ void startGameModeS()
 
 	hrana(hranaBlok.position.X, hranaBlok.position.Y);
 	PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC );
-	PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+	PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 	while (1) {
 		Sleep(speedZmije);
 		if (!guta)
@@ -1186,7 +1196,7 @@ void startGameModeS()
 					if (speedZmije != ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("tokio.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(TURBO_MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = ULTRA_MOD;
 					break;
@@ -1194,7 +1204,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 100;
 					break;
@@ -1202,7 +1212,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 75;
 					break;
@@ -1210,7 +1220,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 50;
 					break;
@@ -1218,7 +1228,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 25;
 					break;
@@ -1226,7 +1236,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED;
 					break;
@@ -1234,7 +1244,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 25;
 					break;
@@ -1242,7 +1252,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 50;
 					break;
@@ -1250,7 +1260,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 75;
 					break;
@@ -1258,7 +1268,7 @@ void startGameModeS()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 100;
 					break;
@@ -1276,9 +1286,9 @@ void startGameModeS()
 				else if (mute)
 				{
 					if(speed)
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					else
-						PlaySound(TEXT("tokio.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(TURBO_MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					mute = false;
 				}
 
@@ -1531,7 +1541,6 @@ void startGameModeC()
 	wchar_t* niz;
 	char c;
 	char d[50] = {};
-	char string[100];
 	BLOK_ZMIJE defBlok;
 	int trenutniSmer = SMER_DESNO;
 	int prosliSmer = SMER_DESNO;
@@ -1595,7 +1604,7 @@ void startGameModeC()
 
 	hrana(hranaBlok.position.X, hranaBlok.position.Y);
 	PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-	PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+	PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 	while (1) {
 		Sleep(speedZmije);
 		if (!guta)
@@ -1693,7 +1702,7 @@ void startGameModeC()
 					if (speedZmije != ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("tokio.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(TURBO_MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = ULTRA_MOD;
 					break;
@@ -1701,7 +1710,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 100;
 					break;
@@ -1709,7 +1718,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 75;
 					break;
@@ -1717,7 +1726,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 50;
 					break;
@@ -1725,7 +1734,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED + 25;
 					break;
@@ -1733,7 +1742,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED;
 					break;
@@ -1741,7 +1750,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 25;
 					break;
@@ -1749,7 +1758,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 50;
 					break;
@@ -1757,7 +1766,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 75;
 					break;
@@ -1765,7 +1774,7 @@ void startGameModeC()
 					if (speedZmije == ULTRA_MOD && !mute)
 					{
 						PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					}
 					speedZmije = DEFAULT_SPEED - 100;
 					break;
@@ -1783,9 +1792,9 @@ void startGameModeC()
 				else if (mute)
 				{
 					if (speed)
-						PlaySound(TEXT("idezmija.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					else
-						PlaySound(TEXT("tokio.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+						PlaySound(TEXT(TURBO_MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 					mute = false;
 				}
 
@@ -2076,7 +2085,6 @@ void changeConsole2(SHORT width, SHORT height, int font, int fontx)
 {
 	CONSOLE_FONT_INFOEX cfi;
 	char komanda[50] = "mode";
-	char broj[10];
 	cfi.cbSize = sizeof(cfi);
 	cfi.nFont = 0;
 	cfi.dwFontSize.X = fontx;
@@ -2320,7 +2328,7 @@ void ispisBroj(int x, int y, int broj)
 
 void startAnim()
 {
-	char ime[100] = "CountdownAnim\\frame";
+	char ime[100] = COUNTDOWN_ANIM;
 	char broj[20];
 	wchar_t *niz;
 
@@ -2330,7 +2338,7 @@ void startAnim()
 	gotoxy(0, 0);
 	system("cls");
 	mtx.unlock();
-	PlaySound(TEXT("projector.wav"), NULL, SND_FILENAME|SND_ASYNC);
+	PlaySound(TEXT(PROJECTOR_MUSIC), NULL, SND_FILENAME|SND_ASYNC);
 	Sleep(10);
 	for (int i = 0; i <= 52; i++)
 	{
@@ -2344,7 +2352,7 @@ void startAnim()
 		changeFgBg(0, 15);
 		wprintf(L"%s", niz);
 		mtx.unlock();
-		strcpy(ime, "CountdownAnim\\frame");
+		strcpy(ime, COUNTDOWN_ANIM);
 		free(niz);
 		Sleep(50);
 	}
@@ -2771,9 +2779,9 @@ void blinkAnim(BLOK_ZMIJE* zmija, int snakeSize)
 void GameOver()
 {
 	PlaySound(NULL, NULL, SND_NODEFAULT | SND_ASYNC);
-	PlaySound(TEXT("astronomia.wav"), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
+	PlaySound(TEXT(GAME_OVER_MUSIC), NULL, SND_NODEFAULT | SND_FILENAME | SND_ASYNC | SND_LOOP);
 
-	char frame[100] = "DEAD\\frame";
+	char frame[100] = DEAD_ANIM;
 	char frameNum[3];
 	wchar_t* niz;
 	system("cls");
@@ -2803,7 +2811,7 @@ void GameOver()
 
 			free(niz);
 
-			strcpy(frame, "DEAD\\frame");
+			strcpy(frame, DEAD_ANIM);
 			Sleep(25);
 		}
 	}
